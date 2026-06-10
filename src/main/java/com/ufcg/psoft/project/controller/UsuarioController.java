@@ -62,4 +62,19 @@ public class UsuarioController {
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
     }
+
+    @GetMapping("/buscar-nome")
+    public ResponseEntity<?> buscarPorNome(@RequestParam String nome) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(usuarioService.buscarPorNome(nome));
+    }
+
+    @GetMapping("/buscar-endereco")
+    public ResponseEntity<?> buscarPorEndereco(@RequestParam String endereco) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(usuarioService.buscarPorEndereco(endereco));
+    }
+
 }

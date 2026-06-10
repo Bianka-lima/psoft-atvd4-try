@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -566,6 +567,68 @@ public class UsuarioControllerTests {
             assertAll(
                     () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("Testes das US01, US02 e US03 - Buscas e Ordenação")
+    class BuscasEOrdenacaoTests {
+
+       @BeforeEach
+        void prepararCenarioDeBusca() {
+            // Limpa a base de dados e insere utilizadores específicos para testar ordem e letras maiúsculas/minúsculas
+            usuarioRepository.deleteAll();
+            usuarioRepository.save(Usuario.builder().nome("Zeta Silva").endereco("Rua das Flores 1").codigo("111").build());
+            usuarioRepository.save(Usuario.builder().nome("Ana Silva").endereco("Avenida Central").codigo("222").build());
+            usuarioRepository.save(Usuario.builder().nome("Carlos Silva").endereco("rua das FLORES 2").codigo("333").build());
+        }
+
+        @Test
+        @DisplayName("US01/US03: Deve buscar por nome (case insensitive) e retornar em ordem alfabética")
+        void buscarPorNomeComSucesso() throws Exception {
+            // Busca por "silva" minúsculo. A ordem alfabética deve ser: Ana, Carlos, Zeta.
+            driver.perform(get(URI_USUARIOS + "/buscar-nome")
+                    .param("nome", "silva")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(3))
+                    .andExpect(jsonPath("$[0].nome").value("Ana Silva"))
+                    .andExpect(jsonPath("$[1].nome").value("Carlos Silva"))
+                    .andExpect(jsonPath("$[2].nome").value("Zeta Silva"));
+        }
+
+        @Test
+        @DisplayName("US02/US03: Deve buscar por endereço (case insensitive) e retornar em ordem alfabética")
+        void buscarPorEnderecoComSucesso() throws Exception {
+            // Busca por "flores". Deve achar Carlos e Zeta. 
+            // Como a ordem é pelo NOME, 'Carlos' vem antes de 'Zeta'.
+            driver.perform(get(URI_USUARIOS + "/buscar-endereco")
+                    .param("endereco", "flores")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(2))
+                    .andExpect(jsonPath("$[0].nome").value("Carlos Silva"))
+                    .andExpect(jsonPath("$[1].nome").value("Zeta Silva"));
+        }
+
+        @Test
+        @DisplayName("US01: Deve retornar lista vazia quando nome não existe")
+        void buscarPorNomeVazio() throws Exception {
+            driver.perform(get(URI_USUARIOS + "/buscar-nome")
+                    .param("nome", "NomeQueNaoExisteNenhum")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("US02: Deve retornar lista vazia quando endereço não existe")
+        void buscarPorEnderecoVazio() throws Exception {
+            driver.perform(get(URI_USUARIOS + "/buscar-endereco")
+                    .param("endereco", "LugarNenhum")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(0));
         }
     }
 }
