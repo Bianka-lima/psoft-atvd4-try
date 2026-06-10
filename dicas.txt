@@ -1,0 +1,7 @@
+Vá no Repository: Crie a assinatura do método mágico (findByCpf(String cpf);).
+
+Vá no Service (Interface e Impl): Crie o método que recebe o CPF, chama o repository.findByCpf() e converte o resultado para DTO (se o projeto exigir).
+
+Vá no Controller: Crie o endpoint com @GetMapping("/buscar-cpf"), receba o parâmetro com @RequestParam e chame o método do Service.
+
+Vá no Teste: Crie um mock (salve um cliente falso), chame a URL do Controller e faça os andExpect para garantir que o cliente falso foi retornado.
