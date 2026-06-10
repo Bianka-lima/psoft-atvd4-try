@@ -17,8 +17,4 @@ public interface UsuarioService {
 
     void remover(Long id, String codigoAcesso);
 
-    List<UsuarioResponseDTO> buscarPorNome(String nome);
-    
-    List<UsuarioResponseDTO> buscarPorEndereco(String endereco);
-
 }
