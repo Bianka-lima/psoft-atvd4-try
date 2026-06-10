@@ -5,3 +5,44 @@ Vá no Service (Interface e Impl): Crie o método que recebe o CPF, chama o repo
 Vá no Controller: Crie o endpoint com @GetMapping("/buscar-cpf"), receba o parâmetro com @RequestParam e chame o método do Service.
 
 Vá no Teste: Crie um mock (salve um cliente falso), chame a URL do Controller e faça os andExpect para garantir que o cliente falso foi retornado.
+
+1. A Arquitetura das Camadas (Quem faz o quê?)O segredo do Spring é a separação de responsabilidades. Nunca misture o trabalho de uma camada na outra.
+Model (Entidades): São as suas classes de dados (ex: Usuario.java). Elas representam as tabelas do banco de dados. Ficam "paradas" e só guardam informações.
+Repository (O Banco de Dados): É uma interface que herda de JpaRepository. É o único lugar que conversa com o banco de dados. Não tem lógica matemática nem regras aqui, só comandos de "salvar", "buscar" e "deletar".
+Service (A Regra de Negócio): É o "cérebro". É aqui que você faz validações ("esse usuário existe?", "a senha tá certa?"). O Service pede dados ao Repository, processa tudo e devolve o resultado.
+Controller (A Porta da Internet): É quem recebe as requisições (URLs) do usuário e devolve as respostas (JSON). Ele não processa regras; ele apenas anota o pedido, manda o Service trabalhar e devolve a marmita pronta (ResponseEntity) para quem pediu.
+DTO (Data Transfer Object): São classes "dublês". Você usa os DTOs para não mostrar sua Entidade inteira para a internet.
+2. Anotação:
+@Entity (Model) Avisa ao banco de dados que essa classe vai virar uma tabela.
+@Id (Model) Define qual atributo é a Chave Primária (o ID único).
+@Service (Service) Diz ao Spring que essa classe é um serviço (Regra de Negócio).
+@RestController (Controller) Transforma a classe num recepcionista de requisições web.
+@RequestMapping (Controller) Define o caminho base da URL (ex: ("/usuario")).
+@Autowired (Service/Controller) É a "cola". Usa-se para injetar uma classe dentro da outra (ex: colocar o Repository dentro do Service).
+
+Anotações de Rotas (No Controller):
+@GetMapping: Para buscar/listar informações. (Usa @RequestParam para ler dados da URL ou @PathVariable para ler o ID da URL).
+@PostMapping: Para criar/salvar novos registros. (Usa @RequestBody para ler o JSON que vem do usuário).
+@PutMapping: Para atualizar/alterar registros existentes.
+@DeleteMapping: Para excluir registros.
+
+3. A Magia do Repository (Spring Data JPA)Você não precisa escrever SQL. Se você usar as palavras-chave do Spring em inglês, ele cria a consulta sozinho. 
+A regra é: Ação + Onde + Condição + Ordenação.
+
+4. Resumo de Testes (MockMvc)
+
+Na hora de criar testes de Controller, a estrutura segue o padrão Arrange, Act, Assert (Preparar, Agir, Verificar):
+
+    @BeforeEach: Roda antes de cada teste. Útil para limpar o banco (repository.deleteAll()) e criar dados falsos (repository.save(...)) para o teste usar.
+
+    driver.perform(...): É a simulação de um usuário clicando no seu sistema. Você diz o método (ex: get(), post()), a URL e os parâmetros.
+
+    andExpect(...): São as verificações.
+
+        status().isOk() verifica se a resposta foi 200 (Sucesso).
+
+        status().isCreated() verifica se foi 201 (Criado).
+
+        jsonPath("$.length()").value(3) verifica se a lista retornada tem 3 itens.
+
+        jsonPath("$[0].nome").value("Ana") verifica se o primeiro item da lista tem o nome "Ana".
