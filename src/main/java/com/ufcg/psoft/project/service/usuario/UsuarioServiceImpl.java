@@ -61,20 +61,4 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(UsuarioNaoExisteException::new);
         return new UsuarioResponseDTO(usuario);
     }
-
-    @Override
-    public List<UsuarioResponseDTO> buscarPorNome(String nome) {
-        List<Usuario> usuarios = usuarioRepository.findByNomeContainingIgnoreCaseOrderByNomeAsc(nome);
-        return usuarios.stream()
-                .map(UsuarioResponseDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<UsuarioResponseDTO> buscarPorEndereco(String endereco) {
-        List<Usuario> usuarios = usuarioRepository.findByEnderecoContainingIgnoreCaseOrderByNomeAsc(endereco);
-        return usuarios.stream()
-                .map(UsuarioResponseDTO::new)
-                .collect(Collectors.toList());
-    }
 }
